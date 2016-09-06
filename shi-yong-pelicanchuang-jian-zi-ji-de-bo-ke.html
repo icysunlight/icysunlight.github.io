@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ch">
+<head>
+        <meta charset="utf-8" />
+        <title>使用Pelican创建自己的博客</title>
+        <link rel="stylesheet" href="/theme/css/main.css" />
+
+        <!--[if IE]>
+            <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="/">bingchen </a></h1>
+                <nav><ul>
+                    <li><a href="/category/test.html">test</a></li>
+                    <li class="active"><a href="/category/za-ji.html">杂记</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="/shi-yong-pelicanchuang-jian-zi-ji-de-bo-ke.html" rel="bookmark"
+           title="Permalink to 使用Pelican创建自己的博客">使用Pelican创建自己的博客</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2016-09-06T18:13:00+08:00">
+                Published: 周二 06 九月 2016
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="/author/bingchen.html">bingchen</a>
+        </address>
+<p>In <a href="/category/za-ji.html">杂记</a>.</p>
+
+</footer><!-- /.post-info -->      <h1>前言</h1>
+<p>折腾了许久，终于有了自己的博客，撒花纪念下</p>
+<h2>为什么要搭建博客</h2>
+<p>发现自己原来的学习过程总是得过且过，做会的东西就放下了，也不会去复习，导致很多时候
+都是捡了西瓜，丢了西瓜，最后手里还是只有一个西瓜，以后自己学习工作中遇到的问题都会
+尽可能写成文字的形式放在这里，也算给自己一个督促吧。</p>
+<h2>为什么要自己搭建博客</h2>
+<p>本来想使用现成的博客，但是既然是一个技术向的博客，写算法是必然的了，写算法怎么能不配
+图呢。作为程序员，我很希望有代码能直接生成一些示意图，最后选择了graphviz完成这个功能，
+再结合markdown，天衣无缝有没有。但现成的博客系统很少支持graphviz，即便支持的，也没有
+支持实时显示的，只好自己动手，丰衣足食了。</p>
+<h1>利用vim实时显示</h1>
+<p>其实Atom也可以做到这样的功能，不过本人对python更熟悉，所以就决定使用python扩展vim来
+实现了。</p>
+<h2>python-inline-graphviz</h2>
+<p>这是一个python库，用来在markdown中使用dot语法来显示图片。原理就是利用正则表达式
+不断匹配文章中的dot程序片段，然后调用graphviz，用生成的图片替换文中的dot程序片段。
+支持下面这种语法：</p>
+<div class="highlight"><pre><span></span>{% dot attack_plan.svg
+    digraph G {
+        rankdir=LR
+        Earth [peripheries=2]
+        Mars
+        Earth -&gt; Mars
+    }
+%}
+</pre></div>
+
+
+<p>但是我希望支持下面的这种语法：</p>
+<div class="highlight"><pre><span></span>{% graphviz
+    dot {
+        digraph graphname {
+            a -&gt; b -&gt; c;
+            b -&gt; d;
+        }
+    }
+%}
+</pre></div>
+
+
+<p>具体原因后面再说
+所以就把mdx_inline_graphviz.py中的正则表达式改成了：</p>
+<div class="highlight"><pre><span></span><span class="n">BLOCK_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+    <span class="s1">r&#39;\s*\{%\s*graphviz\s*(?P&lt;command&gt;\w*)\s*{(?P&lt;content&gt;.*?)\s*}\s*%}\s*$&#39;</span>
+    <span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
+</pre></div>
+
+
+<p>由于后面的语法没有文件名，所以文件中还有很多细碎的东西要改，不过相信能使用vim的
+人，这些都是小case，就不赘述了。</p>
+<h2>python-vim-instant-markdown</h2>
+<p>这个是vim的一个python插件，用来支持实时markdown文件的显示，可以直接使用vundle安装。
+原理就是建立一个简单的服务器，将markdown的显示结果放在浏览器中，安装后输入:Instantmd
+就可以看到，如果没有自动启动的话，访问localhost:7000也可以。
+这个插件可以直接使用上面提到的python-inline-graphviz,只需要在md_instant.py中的markdown_options
+中增加mdx_inline_graphviz即可：</p>
+<div class="highlight"><pre><span></span><span class="n">markdown_options</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;extra&#39;</span><span class="p">,</span> <span class="s1">&#39;codehilite&#39;</span><span class="p">,</span> <span class="s1">&#39;mdx_inline_graphviz&#39;</span><span class="p">]</span>
+</pre></div>
+
+
+<p>至此，就可以在vim中快了地写支持graphviz的markdown了</p>
+<h3>ps</h3>
+<p>当然了，你需要安装graphviz，自行google了。</p>
+<h1>Pelican和github创建静态博客</h1>
+<h2>Pelican</h2>
+<p>现在最流行的博客框架应该属wordpress和hexo了吧，但是wordpress需要自己申请服务器，而且
+还是用PHP写的，完全不会呀，而hexo虽然可以直接在github上托管，但我对js不是很熟。所以最终
+选择了用python写的可以在github上托管的Pelican</p>
+<p>为了支持graphviz，安装了liquid_tags下的graphviz插件<sup>2</sup>
+我希望vim中支持的graphviz语法和pelican中的一样，但是pelican上装的支持graphviz的插件支持
+的是上面的第二种格式，pelican的插件貌似很复杂，找到的资料说的都是云里雾里，因此选择比较简单
+的方案，修改了python的库的代码</p>
+<p>具体安装和使用过程就不说了，有兴趣的可以去查看参考资料，说得很详细了，这里就说几个问题。</p>
+<h3>windows下make</h3>
+<p>windows下make不好用，我的make不知道出了什么问题，$(CURDIR)是空值，并且利用；连续执行几个
+make的指令也不好用，只好自食其力，改编了削微寒大大的makefile<sup>3</sup>：</p>
+<div class="highlight"><pre><span></span><span class="nv">PY</span><span class="o">=</span>python
+<span class="nv">PELICAN</span><span class="o">=</span>pelican
+<span class="nv">PELICANOPTS</span><span class="o">=</span>
+
+<span class="nv">INPUTDIR</span><span class="o">=</span>content
+<span class="nv">OUTPUTDIR</span><span class="o">=</span>output
+<span class="nv">CONFFILE</span><span class="o">=</span>pelicanconf.py
+<span class="nv">PUBLISHCONF</span><span class="o">=</span>publishconf.py
+
+<span class="nv">DEBUG</span> <span class="o">?=</span> 0
+<span class="cp">ifeq ($(DEBUG), 1)</span>
+    PELICANOPTS +<span class="o">=</span> -D
+<span class="cp">endif</span>
+
+<span class="nv">RELATIVE</span> <span class="o">?=</span> 0
+<span class="cp">ifeq ($(RELATIVE), 1)</span>
+    PELICANOPTS +<span class="o">=</span> --relative-urls
+<span class="cp">endif</span>
+
+<span class="nf">test </span><span class="o">:</span>
+    path :<span class="o">=</span> <span class="k">$(</span>realpath .<span class="k">)</span>
+    @echo <span class="k">$(</span>path<span class="k">)</span>
+
+<span class="nf">html </span><span class="o">:</span>
+    <span class="k">$(</span>PELICAN<span class="k">)</span> <span class="k">$(</span>INPUTDIR<span class="k">)</span> -o <span class="k">$(</span>OUTPUTDIR<span class="k">)</span> -s <span class="k">$(</span>CONFFILE<span class="k">)</span> <span class="k">$(</span>PELICANOPTS<span class="k">)</span>
+
+<span class="nf">clean</span><span class="o">:</span>
+    <span class="o">[</span> ! -d <span class="k">$(</span>OUTPUTDIR<span class="k">)</span> <span class="o">]</span> <span class="o">||</span> rm -rf <span class="k">$(</span>OUTPUTDIR<span class="k">)</span>
+
+<span class="nf">regenerate</span><span class="o">:</span>
+    <span class="k">$(</span>PELICAN<span class="k">)</span> -r <span class="k">$(</span>INPUTDIR<span class="k">)</span> -o <span class="k">$(</span>OUTPUTDIR<span class="k">)</span> -s <span class="k">$(</span>CONFFILE<span class="k">)</span> <span class="k">$(</span>PELICANOPTS<span class="k">)</span>
+
+<span class="nf">server</span><span class="o">:</span>
+<span class="cp">ifdef PORT</span>
+    <span class="nb">cd</span> <span class="k">$(</span>OUTPUTDIR<span class="k">)</span> <span class="o">&amp;&amp;</span> <span class="k">$(</span>PY<span class="k">)</span> -m pelican.server <span class="k">$(</span>PORT<span class="k">)</span>
+<span class="cp">else</span>
+    <span class="nb">cd</span> <span class="k">$(</span>OUTPUTDIR<span class="k">)</span> <span class="o">&amp;&amp;</span> <span class="k">$(</span>PY<span class="k">)</span> -m pelican.server
+<span class="cp">endif</span>
+
+<span class="nf">publish</span><span class="o">:</span>
+    <span class="k">$(</span>PELICAN<span class="k">)</span> <span class="k">$(</span>INPUTDIR<span class="k">)</span> -o <span class="k">$(</span>OUTPUTDIR<span class="k">)</span> -s <span class="k">$(</span>CONFFILE<span class="k">)</span> <span class="k">$(</span>PELICANOPTS<span class="k">)</span>
+
+<span class="nf">github</span><span class="o">:</span>
+    <span class="nb">cd</span> <span class="k">$(</span>OUTPUTDIR<span class="k">)</span> <span class="o">&amp;&amp;</span> git add . <span class="o">&amp;&amp;</span> git commit -m <span class="s2">&quot;test&quot;</span> <span class="o">&amp;&amp;</span> git push origin master<span class="sb">`</span>
+</pre></div>
+
+
+<h3>插入图片<sup>4</sup></h3>
+<ol>
+<li>在content下新建images文件夹，将图片放在images中</li>
+<li>在 pelicanconf.py 中添加</li>
+</ol>
+<div class="highlight"><pre><span></span>STATIC_PATHS = [&#39;images&#39;]
+</pre></div>
+
+
+<p>3.在文章中添加</p>
+<div class="highlight"><pre><span></span>![aimage](/images/xxx.png)
+</pre></div>
+
+
+<h2>github部分</h2>
+<p>这部分削微寒大大<sup>3</sup>说的很明白了，我就不赘述了。</p>
+<h1>参考文献</h1>
+<ol>
+<li>
+<p><a href="https://pypi.python.org/pypi/markdown-inline-graphviz/1.0">python-vim-instant-markdown</a></p>
+</li>
+<li>
+<p><a href="https://github.com/getpelican/pelican-plugins/blob/master/liquid_tags/graphviz.py">pelican-plugins/graphviz.py</a></p>
+</li>
+<li>
+<p><a href="http://www.xueweihan.com/pelican-build-bolg.html">http://www.xueweihan.com/pelican-build-bolg.html</a></p>
+</li>
+<li>
+<p><a href="http://blog.csdn.net/orangleliu/article/details/43120835">http://blog.csdn.net/orangleliu/article/details/43120835</a></p>
+</li>
+</ol>
+    </div><!-- /.entry-content -->
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+
+                            <li><a href="#">691013542@qq.com</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>
