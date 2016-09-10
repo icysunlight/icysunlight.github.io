@@ -22,7 +22,106 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="/126-word-ladder-ii.html">126 word ladder II</a></h1>
+                    <h1 class="entry-title"><a href="/120-triangle.html">120 Triangle</a></h1>
+<footer class="post-info">
+        <abbr class="published" title="2016-09-10T23:03:00+08:00">
+                Published: 周六 10 九月 2016
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="/author/bingchen.html">bingchen</a>
+        </address>
+<p>In <a href="/category/leetcode.html">leetcode</a>.</p>
+
+</footer><!-- /.post-info --><h1>Problem</h1>
+<p>Triangle  QuestionEditorial Solution<br />
+Given a triangle, find the minimum path sum from top to bottom. Each step you may move to adjacent numbers on the row below.<br />
+For example, given the following triangle  </p>
+<div class="highlight"><pre><span></span>[
+     [2],
+    [3,4],
+   [6,5,7],
+  [4,1,8,3]
+]
+</pre></div>
+
+
+<p>The minimum path sum from top to bottom is 11 (i.e., 2 + 3 + 5 + 1 = 11).</p>
+<h1>Thoughts</h1>
+<p>很明显的一道dp题目，但是需要注意很多细节</p>
+<h3>top to bottom</h3>
+<p>我自己想到的是自上而下的dp，递推公式：<br />
+dp(i, j) = min(dp(i - 1, j) + dp(i - 1, j - 1)) + val(i，j)<br />
+其中dp(i,j)表示从根走到三角形第i行第j列时的最小值，val(i,j)表示三角形第i行第j列的值<br />
+需要处理的边界条件:<br />
+i &gt;= 0 , j &gt;= 0, 所以要单独处理i == 0 和 j == 0的情况<br />
+同时j == i的时候， dp(i - 1, j)是没有意义的，所以也需要单独处理</p>
+<h3>bottom to top</h3>
+<p>看leetcode上的解法，<a href="https://discuss.leetcode.com/topic/8077/my-8-line-dp-java-code-4-meaningful-lines-with-o-1-space">https://discuss.leetcode.com/topic/8077/my-8-line-dp-java-code-4-meaningful-lines-with-o-1-space</a>
+递推公式：<br />
+dp(i, j) = min(dp(i + 1, j), dp(i + 1, j + 1)) + val(i, j)<br />
+dp和val的意义和前面的解法完全一样<br />
+这样做的好处就是完全不需要边界条件的判断，写起来很方便。</p>
+<h1>pseudocode &amp; code</h1>
+<h3>top to bottom</h3>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="n">Solution</span> {
+<span class="n">public:</span>
+    <span class="nb">int</span> <span class="n">minimumTotal</span>(<span class="n">vector</span><span class="s">&lt;vector&lt;int&gt;</span>&gt;&amp; <span class="n">triangle</span>) {
+        <span class="n">vector</span><span class="s">&lt;int&gt;</span> <span class="n">dp</span>(<span class="n">triangle</span>.<span class="n">size</span>(), <span class="mi">0</span>);
+        <span class="k">for</span> (<span class="nb">int</span> <span class="n">i</span> = <span class="mi">1</span> ; <span class="n">i</span> &lt;= <span class="n">triangle</span>.<span class="n">size</span>() ; ++<span class="n">i</span>) {
+            <span class="n">vector</span><span class="s">&lt;int&gt;</span>&amp; <span class="n">val</span> = <span class="n">triangle</span>[<span class="n">i</span> - <span class="mi">1</span>];
+            <span class="k">for</span> (<span class="nb">int</span> <span class="n">j</span> = <span class="n">i</span> - <span class="mi">1</span> ; <span class="n">j</span> &gt;= <span class="mi">0</span> ; --<span class="n">j</span>) {
+                <span class="k">if</span> (<span class="n">j</span> == <span class="mi">0</span>)     //<span class="n">error</span>：<span class="n">非常希望把这几种情况统一</span>，<span class="n">反而增加了很多错误</span>，<span class="n">不如直接分类讨论</span>
+                    <span class="n">dp</span>[<span class="n">j</span>] = <span class="n">dp</span>[<span class="n">j</span>] + <span class="n">val</span>[<span class="n">j</span>];
+                <span class="k">else</span> <span class="k">if</span> (<span class="n">j</span> == <span class="n">i</span> - <span class="mi">1</span>)
+                    <span class="n">dp</span>[<span class="n">j</span>] = <span class="n">dp</span>[<span class="n">j</span> - <span class="mi">1</span>] + <span class="n">val</span>[<span class="n">j</span>];
+                <span class="k">else</span>
+                    <span class="n">dp</span>[<span class="n">j</span>] = <span class="nb">min</span>(<span class="n">dp</span>[<span class="n">j</span>], <span class="n">dp</span>[<span class="n">j</span> - <span class="mi">1</span>]) + <span class="n">val</span>[<span class="n">j</span>];
+            }
+        }
+        <span class="nb">int</span> <span class="n">ret</span> = <span class="n">dp</span>[<span class="mi">0</span>];        //<span class="n">error</span>： <span class="n">直接返回了dp</span>(<span class="n">triangle</span>.<span class="n">size</span>() - <span class="mi">1</span>)
+        <span class="k">for</span> (<span class="nb">int</span> <span class="n">i</span> = <span class="mi">0</span> ; <span class="n">i</span> &lt; <span class="n">triangle</span>.<span class="n">size</span>() ; ++<span class="n">i</span>)
+            <span class="n">ret</span> = <span class="nb">min</span>(<span class="n">ret</span>, <span class="n">dp</span>[<span class="n">i</span>]); //<span class="nb">min</span> <span class="n">和</span> <span class="n">max弄反了</span>
+        <span class="k">return</span> <span class="n">ret</span>;
+    }
+};
+</pre></div>
+
+
+<h3>bottom to top</h3>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="n">Solution</span> {
+<span class="n">public:</span>
+    <span class="nb">int</span> <span class="n">minimumTotal</span>(<span class="n">vector</span><span class="s">&lt;vector&lt;int&gt;</span>&gt;&amp; <span class="n">triangle</span>) {
+        <span class="n">vector</span><span class="s">&lt;int&gt;</span> <span class="n">dp</span>(<span class="n">triangle</span>.<span class="n">size</span>() + <span class="mi">1</span>, <span class="mi">0</span>);
+        <span class="k">for</span> (<span class="nb">int</span> <span class="n">i</span> = <span class="n">triangle</span>.<span class="n">size</span>() - <span class="mi">1</span> ; <span class="n">i</span> &gt;= <span class="mi">0</span> ; --<span class="n">i</span>) {
+            <span class="n">vector</span><span class="s">&lt;int&gt;</span>&amp; <span class="n">val</span> = <span class="n">triangle</span>[<span class="n">i</span>];
+            <span class="k">for</span> (<span class="nb">int</span> <span class="n">j</span> = <span class="mi">0</span> ; <span class="n">j</span> &lt;= <span class="n">i</span> ; ++<span class="n">j</span>)
+                <span class="n">dp</span>[<span class="n">j</span>] = <span class="nb">min</span>(<span class="n">dp</span>[<span class="n">j</span>], <span class="n">dp</span>[<span class="n">j</span> + <span class="mi">1</span>]) + <span class="n">val</span>[<span class="n">j</span>];     //<span class="n">error:</span> <span class="n">遗忘了val</span>[<span class="n">j</span>]
+        }
+
+        <span class="k">return</span> <span class="n">dp</span>[<span class="mi">0</span>];
+    }
+};
+</pre></div>
+
+
+<h1>Tips</h1>
+<ol>
+<li>dp的边界条件可以通过递推公式反向得出</li>
+</ol>                </article>
+            </aside><!-- /#featured -->
+                <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+
+            <li><article class="hentry">
+                <header>
+                    <h1><a href="/126-word-ladder-ii.html" rel="bookmark"
+                           title="Permalink to 126 word ladder II">126 word ladder II</a></h1>
+                </header>
+
+                <div class="entry-content">
 <footer class="post-info">
         <abbr class="published" title="2016-09-08T21:54:00+08:00">
                 Published: 周四 08 九月 2016
@@ -33,129 +132,16 @@
         </address>
 <p>In <a href="/category/leetcode.html">leetcode</a>.</p>
 
-</footer><!-- /.post-info --><h1>Problem</h1>
+</footer><!-- /.post-info -->                <h1>Problem</h1>
 <p>Given two words (beginWord and endWord), and a dictionary's word list, find all shortest transformation sequence(s) from beginWord to endWord, such that:
 1. Only one letter can be changed at a time
 2. Each intermediate word must exist in the word list<br />
 For example,<br />
 Given:<br />
-beginWord = "hit"<br />
-endWord = "cog"<br />
-wordList = ["hot","dot","dog","lot","log"]<br />
-Return  </p>
-<div class="highlight"><pre><span></span>  [
-    [&quot;hit&quot;,&quot;hot&quot;,&quot;dot&quot;,&quot;dog&quot;,&quot;cog&quot;],
-    [&quot;hit&quot;,&quot;hot&quot;,&quot;lot&quot;,&quot;log&quot;,&quot;cog&quot;]
-  ]
-</pre></div>
-
-
-<p>Note:
-All words have the same length.
-All words contain only lowercase alphabetic characters.</p>
-<h1>Thoughts</h1>
-<p>题目的本质是寻找最短路径并打印，但由于所有的路径长度都为1，可以使用bfs或者dfs来寻找<br />
-我最开始的想法是先将所有的单词组成一张图，然后利用bfs来搜索路径。这样的算法可以勉强ac，不过
-不是每次提交都过，可能是因为unordered_set里面采用了随机函数的原因吧。
-后来发现并不需要建立图，因为两个节点之间是否联通可以直接判断。</p>
-<h1>Solution</h1>
-<ol>
-<li>利用bfs从初始单词出发，记录每个单词从初始单词开始到它自己的路径。建立一个类似于树的结构，如下图：<br />
-<div class="graphviz" style="text-align: center;"><img src="data:image/png;base64,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"></div>
-使用unordered_map&lt;string, vector&lt;string&gt;&gt; next表示树，next中存相应字符串在树中的孩子。  </li>
-<li>利用dfs遍历树，并打印路径  </li>
-<li>为了加快bfs的搜索速度，可以从初始和结尾单词同时开始搜索，每次都遍历较小的那个队列，
-当一个队列搜索到出现在另一个队列的元素的时候，就停止但是需要注意从结尾单词搜索的时候，搜索
-到的单词实际是当前单词的父亲，需要一个变量来记录是从头搜索的还是从尾搜索的。  </li>
-<li>搜索下一个单词的时候不要遍历所有的单词，而是采用字母遍历的方式，即枚举所有的与当前单词相差
-一个字母的单词，然后看他是否在单词列表中。  </li>
-<li>bfs要防止重复搜索，最开始的做法是使用一个单独的变量存储已经访问过的单词，后来发现可以简单的将
-已经访问过的单词移除。  </li>
-</ol>
-<h1>pseudocode &amp; code</h1>
-<div class="highlight"><pre><span></span><span class="k">class</span> <span class="n">Solution</span> {
-<span class="n">public:</span>
-    <span class="n">unordered_map</span><span class="s">&lt;string, vector&lt;string&gt;</span>&gt; <span class="k">next</span>;
-    <span class="n">vector</span><span class="s">&lt;vector&lt;string&gt;</span>&gt; <span class="n">findLadders</span>(<span class="n">string</span> <span class="n">beginWord</span>, <span class="n">string</span> <span class="n">endWord</span>, <span class="n">unordered_set</span><span class="s">&lt;string&gt;</span> <span class="nv">&amp;wordList</span>) {
-        //<span class="mi">1</span>. <span class="n">建立从beginWord到endWord的最短路径树</span>,<span class="n">存在next中</span>
-        <span class="n">unordered_set</span><span class="s">&lt;string&gt;</span> <span class="n">headSet</span>, <span class="n">tailSet</span>, *<span class="n">smallerSet</span>, *<span class="n">largerSet</span>;
-        <span class="n">headSet</span>.<span class="n">insert</span>(<span class="n">beginWord</span>);
-        <span class="n">tailSet</span>.<span class="n">insert</span>(<span class="n">endWord</span>);
-        <span class="n">wordList</span>.<span class="n">erase</span>(<span class="n">beginWord</span>);
-        <span class="n">wordList</span>.<span class="n">erase</span>(<span class="n">endWord</span>);
-        <span class="nb">bool</span> <span class="n">forward</span> = <span class="nb">true</span>;
-        <span class="nb">bool</span> <span class="n">connected</span> = <span class="n">false</span>;
-        <span class="k">while</span> (!<span class="n">connected</span>) {
-            // <span class="n">选择较小的队列进行展开</span>
-            <span class="k">if</span> (<span class="n">headSet</span>.<span class="n">size</span>() &gt; <span class="n">tailSet</span>.<span class="n">size</span>()) {
-                <span class="n">smallerSet</span> = <span class="nv">&amp;tailSet</span>;
-                <span class="n">largerSet</span> = <span class="nv">&amp;headSet</span>;
-                <span class="n">forward</span> = <span class="n">false</span>;
-            } <span class="k">else</span> {
-                <span class="n">largerSet</span> = <span class="nv">&amp;tailSet</span>;
-                <span class="n">smallerSet</span> = <span class="nv">&amp;headSet</span>;
-                <span class="n">forward</span> = <span class="nb">true</span>;
-            }
-            <span class="n">unordered_set</span><span class="s">&lt;string&gt;</span> <span class="n">newSet</span>;
-            <span class="k">for</span> (<span class="n">string</span> <span class="n">str:</span> *<span class="n">smallerSet</span>) {   //<span class="n">遍历较小的队列</span>
-                <span class="k">for</span> (<span class="nb">int</span> <span class="n">i</span> = <span class="mi">0</span> ; <span class="n">i</span> &lt; <span class="n">str</span>.<span class="n">size</span>() ; ++<span class="n">i</span>) {
-                    <span class="n">string</span> <span class="n">tmp</span> = <span class="n">str</span>;   //<span class="n">error:</span> <span class="n">放错过位置</span>，<span class="n">放在了下层循环中</span>
-                    <span class="k">for</span> (<span class="n">char</span> <span class="n">c</span> = <span class="s">&#39;a&#39;</span> ; <span class="n">c</span> &lt;= <span class="s">&#39;z&#39;</span> ; ++<span class="n">c</span>) {   //<span class="n">字符遍历</span>
-                        <span class="n">tmp</span>[<span class="n">i</span>] = <span class="n">c</span>;
-                        <span class="k">if</span> (<span class="n">largerSet-</span>&gt;<span class="nb">count</span>(<span class="n">tmp</span>)) { //<span class="n">连接上了</span>
-                            <span class="n">connected</span> = <span class="nb">true</span>;
-                            <span class="k">if</span> (<span class="n">forward</span>) {
-                                <span class="k">next</span>[<span class="n">str</span>].<span class="n">push_back</span>(<span class="n">tmp</span>);
-                            } <span class="k">else</span> {
-                                <span class="k">next</span>[<span class="n">tmp</span>].<span class="n">push_back</span>(<span class="n">str</span>);
-                            }
-                        }
-                        <span class="k">if</span> (<span class="n">wordList</span>.<span class="nb">count</span>(<span class="n">tmp</span>)) {
-                            <span class="k">if</span> (<span class="n">forward</span>) {
-                                <span class="k">next</span>[<span class="n">str</span>].<span class="n">push_back</span>(<span class="n">tmp</span>);
-                            } <span class="k">else</span> {
-                                <span class="k">next</span>[<span class="n">tmp</span>].<span class="n">push_back</span>(<span class="n">str</span>);
-                            }
-                            <span class="n">newSet</span>.<span class="n">insert</span>(<span class="n">tmp</span>);
-                        }
-                    }
-                }
-            }
-            <span class="k">if</span> (<span class="n">newSet</span>.<span class="n">empty</span>()) {    //<span class="n">无法到达</span>
-                <span class="k">break</span>;
-            }
-            <span class="k">for</span> (<span class="n">string</span> <span class="n">str</span> : <span class="n">newSet</span>) {
-                <span class="n">wordList</span>.<span class="n">erase</span>(<span class="n">str</span>);
-            }
-            <span class="n">swap</span>(<span class="n">newSet</span>, *<span class="n">smallerSet</span>);
-        }
-        //<span class="mi">2</span>. <span class="n">依据next</span>，<span class="n">利用dfs</span>，<span class="n">得到结果</span>，<span class="n">存在ret中</span>
-        <span class="n">vector</span><span class="s">&lt;vector&lt;string&gt;</span>&gt; <span class="n">ret</span>;
-        <span class="n">vector</span><span class="s">&lt;string&gt;</span> <span class="n">partRet</span>;
-        <span class="n">partRet</span>.<span class="n">push_back</span>(<span class="n">beginWord</span>);     //<span class="n">遗漏过</span>
-        <span class="n">dfs</span>(<span class="n">beginWord</span>, <span class="n">endWord</span>, <span class="n">partRet</span>, <span class="n">ret</span>);
-        <span class="k">return</span> <span class="n">ret</span>;
-    }
-
-    <span class="nb">void</span> <span class="n">dfs</span>(<span class="n">string</span> <span class="n">cur</span>, <span class="n">string</span>&amp; <span class="n">endStr</span>, <span class="n">vector</span><span class="s">&lt;string&gt;</span>&amp; <span class="n">partRet</span>, <span class="n">vector</span><span class="s">&lt;vector&lt;string&gt;</span>&gt;&amp; <span class="n">ret</span>) {
-        <span class="k">if</span> (<span class="n">cur</span> == <span class="n">endStr</span>) {
-            <span class="n">ret</span>.<span class="n">push_back</span>(<span class="n">partRet</span>);
-            <span class="k">return</span>;
-        }
-
-        <span class="k">for</span> (<span class="n">string</span> <span class="n">str</span> : <span class="k">next</span>[<span class="n">cur</span>]) {
-            <span class="n">partRet</span>.<span class="n">push_back</span>(<span class="n">str</span>);
-            <span class="n">dfs</span>(<span class="n">str</span>, <span class="n">endStr</span>, <span class="n">partRet</span>, <span class="n">ret</span>);
-            <span class="n">partRet</span>.<span class="n">pop_back</span>();
-        }
-    }
-};
-</pre></div>                </article>
-            </aside><!-- /#featured -->
-                <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
+beginWord = "hit ...</p>
+                <a class="readmore" href="/126-word-ladder-ii.html">read more</a>
+                </div><!-- /.entry-content -->
+            </article></li>
 
             <li><article class="hentry">
                 <header>
