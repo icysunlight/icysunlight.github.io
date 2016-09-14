@@ -22,10 +22,10 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="/120-triangle.html">120 Triangle</a></h1>
+                    <h1 class="entry-title"><a href="/maximum-gap.html">Maximum Gap</a></h1>
 <footer class="post-info">
-        <abbr class="published" title="2016-09-10T23:03:00+08:00">
-                Published: 周六 10 九月 2016
+        <abbr class="published" title="2016-09-14T22:03:00+08:00">
+                Published: 周三 14 九月 2016
         </abbr>
 
         <address class="vcard author">
@@ -34,21 +34,27 @@
 <p>In <a href="/category/leetcode.html">leetcode</a>.</p>
 
 </footer><!-- /.post-info --><h1>Problem</h1>
-<p>Triangle  QuestionEditorial Solution<br />
-Given a triangle, find the minimum path sum from top to bottom. Each step you may move to adjacent numbers on the row below.<br />
-For example, given the following triangle  </p>
-<div class="highlight"><pre><span></span>[
-     [2],
-    [3,4],
-   [6,5,7],
-  [4,1,8,3]
-]
-</pre></div>
-
-
-<p>The minimum path sum from top to bottom is 11 (i.e., 2 + 3 + 5 + 1 = 11).</p>
+<p>Given an unsorted array, find the maximum difference between the successive elements in its sorted form.<br />
+Try to solve it in linear time/space.<br />
+Return 0 if the array contains less than 2 elements.<br />
+You may assume all elements in the array are non-negative integers and fit in the 32-bit signed integer range.  </p>
 <h1>Thoughts</h1>
-<p>很明显的一道dp题目，但是需要注意很多细节</p>
+<p>很显然需要排序，但是基于交换的排序平均时间复杂度至少为O(nlogn),因此可以考虑使用桶排序。<br />
+这里并不需要完整的排序，假设max和min是序列中的最大和最小值，序列共有n个数值，那么gap最小为floor((max - min) / (n - 1))<br />
+将从min到max的区间分成若干个连续区间，每个区间跨度为floor((max - min) / (n - 1))，那么只需要考虑前一个区间
+最后的数字和后一个区间最开始的数字即可。</p>
+<h2>Some derivation</h2>
+<ol>
+<li>区间大小为i: <br />
+range_size = floor((max - min) / (n - 1))  </li>
+<li>第k个区间的数字范围为: <br />
+[min + (k - 1) * range_size, min + k * range_size)  </li>
+<li>某个数字n属于的区间号为：<br />
+min + k * range_size &lt;= y &lt; min + (k + 1) * range_size<br />
+k &lt;= (y - min) / x &lt; k + 1<br />
+k = floor((y - min) / x)</li>
+<li>max所在的区间号为floor((max - min) / x),区间个数应该为floor((max - min) / x) + 1  </li>
+</ol>
 <h3>top to bottom</h3>
 <p>我自己想到的是自上而下的dp，递推公式：<br />
 dp(i, j) = min(dp(i - 1, j) + dp(i - 1, j - 1)) + val(i，j)<br />
@@ -66,40 +72,34 @@ dp和val的意义和前面的解法完全一样<br />
 <h3>top to bottom</h3>
 <div class="highlight"><pre><span></span><span class="k">class</span> <span class="n">Solution</span> {
 <span class="n">public:</span>
-    <span class="nb">int</span> <span class="n">minimumTotal</span>(<span class="n">vector</span><span class="s">&lt;vector&lt;int&gt;</span>&gt;&amp; <span class="n">triangle</span>) {
-        <span class="n">vector</span><span class="s">&lt;int&gt;</span> <span class="n">dp</span>(<span class="n">triangle</span>.<span class="n">size</span>(), <span class="mi">0</span>);
-        <span class="k">for</span> (<span class="nb">int</span> <span class="n">i</span> = <span class="mi">1</span> ; <span class="n">i</span> &lt;= <span class="n">triangle</span>.<span class="n">size</span>() ; ++<span class="n">i</span>) {
-            <span class="n">vector</span><span class="s">&lt;int&gt;</span>&amp; <span class="n">val</span> = <span class="n">triangle</span>[<span class="n">i</span> - <span class="mi">1</span>];
-            <span class="k">for</span> (<span class="nb">int</span> <span class="n">j</span> = <span class="n">i</span> - <span class="mi">1</span> ; <span class="n">j</span> &gt;= <span class="mi">0</span> ; --<span class="n">j</span>) {
-                <span class="k">if</span> (<span class="n">j</span> == <span class="mi">0</span>)     //<span class="n">error</span>：<span class="n">非常希望把这几种情况统一</span>，<span class="n">反而增加了很多错误</span>，<span class="n">不如直接分类讨论</span>
-                    <span class="n">dp</span>[<span class="n">j</span>] = <span class="n">dp</span>[<span class="n">j</span>] + <span class="n">val</span>[<span class="n">j</span>];
-                <span class="k">else</span> <span class="k">if</span> (<span class="n">j</span> == <span class="n">i</span> - <span class="mi">1</span>)
-                    <span class="n">dp</span>[<span class="n">j</span>] = <span class="n">dp</span>[<span class="n">j</span> - <span class="mi">1</span>] + <span class="n">val</span>[<span class="n">j</span>];
-                <span class="k">else</span>
-                    <span class="n">dp</span>[<span class="n">j</span>] = <span class="nb">min</span>(<span class="n">dp</span>[<span class="n">j</span>], <span class="n">dp</span>[<span class="n">j</span> - <span class="mi">1</span>]) + <span class="n">val</span>[<span class="n">j</span>];
-            }
+    <span class="nb">int</span> <span class="n">maximumGap</span>(<span class="n">vector</span><span class="s">&lt;int&gt;</span>&amp; <span class="n">nums</span>) {
+        <span class="k">if</span> (<span class="n">nums</span>.<span class="n">size</span>() &lt; <span class="mi">2</span>)
+            <span class="k">return</span> <span class="mi">0</span>;
+
+        <span class="nb">int</span> <span class="n">min_val</span> = *(<span class="n">min_element</span>(<span class="n">nums</span>.<span class="n">begin</span>(), <span class="n">nums</span>.<span class="nb">end</span>()));
+        <span class="nb">int</span> <span class="n">max_val</span> = *(<span class="n">max_element</span>(<span class="n">nums</span>.<span class="n">begin</span>(), <span class="n">nums</span>.<span class="nb">end</span>()));
+        <span class="nb">int</span> <span class="n">diff</span> = <span class="nb">max</span>(<span class="mi">1</span>, <span class="n">max_val</span> - <span class="n">min_val</span>);    //<span class="n">error</span>：<span class="n">没有处理数列全部相同的情况</span>
+        <span class="nb">int</span> <span class="n">range_size</span> = <span class="nb">max</span>(<span class="mi">1</span>, (<span class="n">max_val</span> - <span class="n">min_val</span>) / (<span class="nb">int</span>)<span class="n">nums</span>.<span class="n">size</span>() - <span class="mi">1</span>);    //<span class="n">error:</span> <span class="n">推导使用x</span>，<span class="n">导致忘记具体表示什么了</span>
+        <span class="nb">int</span> <span class="n">range_num</span> = (<span class="n">max_val</span> - <span class="n">min_val</span>) / <span class="n">range_size</span> + <span class="mi">1</span>;
+
+        <span class="n">vector</span><span class="s">&lt;int&gt;</span> <span class="n">range_min</span>(<span class="n">range_num</span>, <span class="n">INT_MAX</span>);
+        <span class="n">vector</span><span class="s">&lt;int&gt;</span> <span class="n">range_max</span>(<span class="n">range_num</span>, <span class="n">INT_MIN</span>);
+
+        <span class="k">for</span> (<span class="nb">int</span> <span class="nb">num</span> : <span class="n">nums</span>) {
+            <span class="nb">int</span> <span class="nb">index</span> = (<span class="nb">num</span> - <span class="n">min_val</span>) / <span class="n">range_size</span>;
+            <span class="n">range_min</span>[<span class="nb">index</span>] = <span class="nb">min</span>(<span class="n">range_min</span>[<span class="nb">index</span>], <span class="nb">num</span>);
+            <span class="n">range_max</span>[<span class="nb">index</span>] = <span class="nb">max</span>(<span class="n">range_max</span>[<span class="nb">index</span>], <span class="nb">num</span>);
         }
-        <span class="nb">int</span> <span class="n">ret</span> = <span class="n">dp</span>[<span class="mi">0</span>];        //<span class="n">error</span>： <span class="n">直接返回了dp</span>(<span class="n">triangle</span>.<span class="n">size</span>() - <span class="mi">1</span>)
-        <span class="k">for</span> (<span class="nb">int</span> <span class="n">i</span> = <span class="mi">0</span> ; <span class="n">i</span> &lt; <span class="n">triangle</span>.<span class="n">size</span>() ; ++<span class="n">i</span>)
-            <span class="n">ret</span> = <span class="nb">min</span>(<span class="n">ret</span>, <span class="n">dp</span>[<span class="n">i</span>]); //<span class="nb">min</span> <span class="n">和</span> <span class="n">max弄反了</span>
+        <span class="nb">int</span> <span class="n">prev</span> = <span class="n">min_val</span>;
+        <span class="nb">int</span> <span class="n">ret</span> = <span class="mi">0</span>;
+        <span class="k">for</span> (<span class="nb">int</span> <span class="n">i</span> = <span class="mi">0</span> ; <span class="n">i</span> &lt; <span class="n">range_num</span> ; ++<span class="n">i</span>) {
+            <span class="k">if</span> (<span class="n">range_min</span>[<span class="n">i</span>] == <span class="n">INT_MAX</span>)        //<span class="n">error:</span> <span class="n">没有处理空区间的情况</span>
+                <span class="k">continue</span>;
+            <span class="n">ret</span> = <span class="nb">max</span>(<span class="n">ret</span>, <span class="n">range_min</span>[<span class="n">i</span>] - <span class="n">prev</span>);
+            <span class="n">prev</span> = <span class="n">range_max</span>[<span class="n">i</span>];
+        }
         <span class="k">return</span> <span class="n">ret</span>;
-    }
-};
-</pre></div>
 
-
-<h3>bottom to top</h3>
-<div class="highlight"><pre><span></span><span class="k">class</span> <span class="n">Solution</span> {
-<span class="n">public:</span>
-    <span class="nb">int</span> <span class="n">minimumTotal</span>(<span class="n">vector</span><span class="s">&lt;vector&lt;int&gt;</span>&gt;&amp; <span class="n">triangle</span>) {
-        <span class="n">vector</span><span class="s">&lt;int&gt;</span> <span class="n">dp</span>(<span class="n">triangle</span>.<span class="n">size</span>() + <span class="mi">1</span>, <span class="mi">0</span>);
-        <span class="k">for</span> (<span class="nb">int</span> <span class="n">i</span> = <span class="n">triangle</span>.<span class="n">size</span>() - <span class="mi">1</span> ; <span class="n">i</span> &gt;= <span class="mi">0</span> ; --<span class="n">i</span>) {
-            <span class="n">vector</span><span class="s">&lt;int&gt;</span>&amp; <span class="n">val</span> = <span class="n">triangle</span>[<span class="n">i</span>];
-            <span class="k">for</span> (<span class="nb">int</span> <span class="n">j</span> = <span class="mi">0</span> ; <span class="n">j</span> &lt;= <span class="n">i</span> ; ++<span class="n">j</span>)
-                <span class="n">dp</span>[<span class="n">j</span>] = <span class="nb">min</span>(<span class="n">dp</span>[<span class="n">j</span>], <span class="n">dp</span>[<span class="n">j</span> + <span class="mi">1</span>]) + <span class="n">val</span>[<span class="n">j</span>];     //<span class="n">error:</span> <span class="n">遗忘了val</span>[<span class="n">j</span>]
-        }
-
-        <span class="k">return</span> <span class="n">dp</span>[<span class="mi">0</span>];
     }
 };
 </pre></div>
@@ -107,13 +107,49 @@ dp和val的意义和前面的解法完全一样<br />
 
 <h1>Tips</h1>
 <ol>
-<li>dp的边界条件可以通过递推公式反向得出</li>
+<li>需要考虑全部相等的边界数据  </li>
+<li>例如区间数目的问题应该做推导，而不是瞎猜  </li>
 </ol>                </article>
             </aside><!-- /#featured -->
                 <section id="content" class="body">
                     <h1>Other articles</h1>
                     <hr />
                     <ol id="posts-list" class="hfeed">
+
+            <li><article class="hentry">
+                <header>
+                    <h1><a href="/120-triangle.html" rel="bookmark"
+                           title="Permalink to 120 Triangle">120 Triangle</a></h1>
+                </header>
+
+                <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2016-09-10T23:03:00+08:00">
+                Published: 周六 10 九月 2016
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="/author/bingchen.html">bingchen</a>
+        </address>
+<p>In <a href="/category/leetcode.html">leetcode</a>.</p>
+
+</footer><!-- /.post-info -->                <h1>Problem</h1>
+<p>Triangle  QuestionEditorial Solution<br />
+Given a triangle, find the minimum path sum from top to bottom. Each step you may move to adjacent numbers on the row below.<br />
+For example, given the following triangle  </p>
+<div class="highlight"><pre><span></span>[
+     [2],
+    [3,4],
+   [6,5,7],
+  [4,1,8,3]
+]
+</pre></div>
+
+
+<p>The minimum path sum from top ...</p>
+                <a class="readmore" href="/120-triangle.html">read more</a>
+                </div><!-- /.entry-content -->
+            </article></li>
 
             <li><article class="hentry">
                 <header>
