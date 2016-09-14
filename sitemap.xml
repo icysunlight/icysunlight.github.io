@@ -5,34 +5,34 @@ xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 <url>
 <loc>/</loc>
-<lastmod>2016-09-14T22:50:37-00:00</lastmod>
+<lastmod>2016-09-14T22:52:19-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>/archives.html</loc>
-<lastmod>2016-09-14T22:50:37-00:00</lastmod>
+<lastmod>2016-09-14T22:52:19-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>/tags.html</loc>
-<lastmod>2016-09-14T22:50:37-00:00</lastmod>
+<lastmod>2016-09-14T22:52:19-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
 <loc>/categories.html</loc>
-<lastmod>2016-09-14T22:50:37-00:00</lastmod>
+<lastmod>2016-09-14T22:52:19-00:00</lastmod>
 <changefreq>daily</changefreq>
 <priority>0.5</priority>
 </url>
 
 <url>
-<loc>/maximum-gap.html</loc>
+<loc>/164-maximum-gap.html</loc>
 <lastmod>2016-09-14T22:03:00+08:00</lastmod>
 <changefreq>weekly</changefreq>
 <priority>0.5</priority>
